@@ -22,14 +22,21 @@ public class CustomerController {
     public ResponseEntity<String> createCustomer(@Valid @RequestBody CustomerRequest customerRequest) {
         return ResponseEntity.ok().body(customerService.createCustomer(customerRequest));
     }
+
     @PutMapping
     public ResponseEntity<Void> updateCustomer(@Valid @RequestBody CustomerRequest customerRequest) {
         customerService.updateCustomer(customerRequest);
         return ResponseEntity.accepted().build();
     }
+
     @GetMapping
     public ResponseEntity<List<CustomerResponse>> findAllCustomers() {
         return ResponseEntity.ok(customerService.findAllCustomers());
+    }
+
+    @GetMapping("/exists/{customer-id}")
+    public ResponseEntity<Boolean> existsById(@PathVariable("customer-id") String customerId) {
+        return ResponseEntity.ok(customerService.existsById(customerId));
     }
 
 }

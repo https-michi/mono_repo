@@ -2,6 +2,7 @@ package com.mich.ecommerce.customer.mapper;
 
 import com.mich.ecommerce.customer.domain.Customer;
 import com.mich.ecommerce.customer.dto.CustomerRequest;
+import com.mich.ecommerce.customer.dto.CustomerResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -18,5 +19,16 @@ public class CustomerMapper {
                 .email(customerRequest.email())
                 .address(customerRequest.address())
                 .build();
+    }
+
+    public CustomerResponse fromCustomer(Customer customer) {
+        Objects.requireNonNull(customer, "Customer must not be null");
+        return new CustomerResponse(
+                customer.getId(),
+                customer.getFirstname(),
+                customer.getLastname(),
+                customer.getEmail(),
+                customer.getAddress()
+        );
     }
 }

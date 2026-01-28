@@ -3,16 +3,20 @@ package com.mich.ecommerce.customer.service;
 import com.mich.ecommerce.customer.domain.Address;
 import com.mich.ecommerce.customer.domain.Customer;
 import com.mich.ecommerce.customer.dto.CustomerRequest;
+import com.mich.ecommerce.customer.dto.CustomerResponse;
 import com.mich.ecommerce.customer.exception.CustomerNotFoundException;
 import com.mich.ecommerce.customer.mapper.CustomerMapper;
 import com.mich.ecommerce.customer.repository.CustomerRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -52,4 +56,10 @@ public class CustomerService {
         customer.setAddress(current);
     }
 
+    public List<CustomerResponse> findAllCustomers() {
+        return customerRepository.findAll()
+                .stream()
+                .map(customerMapper::fromCustomer)
+                .collect(Collectors.toList());
+    }
 }

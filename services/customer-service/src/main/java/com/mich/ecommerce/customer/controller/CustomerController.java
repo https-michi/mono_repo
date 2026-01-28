@@ -5,10 +5,7 @@ import com.mich.ecommerce.customer.service.CustomerService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/customer")
@@ -20,6 +17,11 @@ public class CustomerController {
     @PostMapping
     public ResponseEntity<String> createCustomer(@Valid @RequestBody CustomerRequest customerRequest) {
         return ResponseEntity.ok().body(customerService.createCustomer(customerRequest));
+    }
+    @PutMapping
+    public ResponseEntity<Void> updateCustomer(@Valid @RequestBody CustomerRequest customerRequest) {
+        customerService.updateCustomer(customerRequest);
+        return ResponseEntity.accepted().build();
     }
 
 }

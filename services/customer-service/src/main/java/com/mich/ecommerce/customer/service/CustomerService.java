@@ -67,4 +67,10 @@ public class CustomerService {
         return customerRepository.findById(customerId)
                 .isPresent();
     }
+
+    public CustomerResponse findById(String customerId) {
+        return customerRepository.findById(customerId)
+                .map(customerMapper::fromCustomer)
+                .orElseThrow(() -> new CustomerNotFoundException(String.format("Customer with ID %s not found", customerId)));
+    }
 }

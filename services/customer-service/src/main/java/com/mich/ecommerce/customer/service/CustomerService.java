@@ -73,4 +73,8 @@ public class CustomerService {
                 .map(customerMapper::fromCustomer)
                 .orElseThrow(() -> new CustomerNotFoundException(String.format("Customer with ID %s not found", customerId)));
     }
+
+    public void deleteCustomer(String customerId) {
+        customerRepository.deleteById(customerId);
+    }
 }

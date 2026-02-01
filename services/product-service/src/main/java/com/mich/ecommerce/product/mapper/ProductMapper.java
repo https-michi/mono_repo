@@ -1,5 +1,6 @@
 package com.mich.ecommerce.product.mapper;
 
+import com.mich.ecommerce.product.dto.ProductPurchaseResponse;
 import com.mich.ecommerce.product.dto.ProductRequest;
 import com.mich.ecommerce.product.dto.ProductResponse;
 import com.mich.ecommerce.product.entity.Category;
@@ -34,6 +35,16 @@ public class ProductMapper {
                 category != null ? category.getId() : null,
                 category != null ? category.getName() : "No Category",
                 category != null ? category.getDescription() : null
+        );
+    }
+
+    public ProductPurchaseResponse toProductPurchaseResponse(Product product, double quantity) {
+        return new ProductPurchaseResponse(
+                product.getId(),
+                product.getName(),
+                product.getDescription(),
+                product.getPrice(),
+                quantity
         );
     }
 }

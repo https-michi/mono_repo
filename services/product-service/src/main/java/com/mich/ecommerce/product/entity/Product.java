@@ -20,8 +20,11 @@ public class Product {
             allocationSize = 50
     )
     private Integer id;
+    @Column(nullable = false)
     private String name;
+    @Column(nullable = false)
     private String description;
+    @Column(nullable = false)
     private double availableQuantity;
     private BigDecimal price;
     @ManyToOne(fetch = FetchType.LAZY)

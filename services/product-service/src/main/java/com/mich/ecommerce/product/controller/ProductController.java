@@ -1,5 +1,7 @@
 package com.mich.ecommerce.product.controller;
 
+import com.mich.ecommerce.product.dto.ProductPurchaseRequest;
+import com.mich.ecommerce.product.dto.ProductPurchaseResponse;
 import com.mich.ecommerce.product.dto.ProductRequest;
 import com.mich.ecommerce.product.dto.ProductResponse;
 import com.mich.ecommerce.product.service.ProductService;
@@ -30,5 +32,10 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<ProductResponse>> findAll() {
         return ResponseEntity.ok(productService.findAll());
+    }
+
+    @PostMapping("/purchase")
+    public ResponseEntity<List<ProductPurchaseResponse>> purchaseProducts(@RequestBody List<ProductPurchaseRequest> request) {
+        return ResponseEntity.ok(productService.purchaseProducts(request));
     }
 }

@@ -5,7 +5,7 @@ import com.mich.ecommerce.kafka.OrderConfirmation;
 import com.mich.ecommerce.kafka.OrderProducer;
 import com.mich.ecommerce.order.dto.OrderRequest;
 import com.mich.ecommerce.order.dto.OrderResponse;
-import com.mich.ecommerce.order.exception.BusinessException;
+import com.mich.ecommerce.exception.BusinessException;
 import com.mich.ecommerce.order.mapper.OrderMapper;
 import com.mich.ecommerce.order.repository.OrderRepository;
 import com.mich.ecommerce.orderline.dto.OrderLineRequest;
@@ -14,7 +14,6 @@ import com.mich.ecommerce.product.dto.PurchaseRequest;
 import com.mich.ecommerce.product.service.ProductClient;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

@@ -1,4 +1,4 @@
-package com.mich.ecommerce.order.exception;
+package com.mich.ecommerce.exception;
 
 public class BusinessException extends RuntimeException {
     public BusinessException(String message) {

@@ -10,10 +10,12 @@ import com.mich.ecommerce.order.mapper.OrderMapper;
 import com.mich.ecommerce.order.repository.OrderRepository;
 import com.mich.ecommerce.orderline.dto.OrderLineRequest;
 import com.mich.ecommerce.orderline.service.OrderLineService;
-import com.mich.ecommerce.product.dto.PurchaseRequest;
+import com.mich.ecommerce.payment.PaymentClient;
+import com.mich.ecommerce.payment.PaymentRequest;
 import com.mich.ecommerce.product.service.ProductClient;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class OrderService {
     private final CustomerClient customerClient;
     private final ProductClient productClient;
@@ -29,31 +32,48 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final OrderLineService orderLineService;
     private final OrderProducer orderProducer;
+    private final PaymentClient paymentClient;
 
     @Transactional
     public Integer createdOrder(OrderRequest orderRequest) {
-        // 1. validar cliente (Feign)
+        // 1. Verificación de identidad del cliente mediante comunicación sincrónica (Feign)
         var customer = customerClient.findCustomerById(orderRequest.customerId())
-                .orElseThrow(() -> new BusinessException("Cannot create order:: No customer exists"));
-        // 2. comprar productos (Feign - Sinconico)
-        // aqui restamos el stock. Si no hay stock, esto lanza excepción y el transactional cancela.
+                .orElseThrow(() -> new BusinessException("No se pudo crear la orden: El cliente no existe"));
+
+        // 2. Procesamiento de compra y reserva de stock (Operación Sincrónica)
+        // Si el stock es insuficiente, el micro de productos lanzará una excepción
+        // y el @Transactional ejecutará el rollback automático de toda la operación.
         var purchaseProducts = productClient.purchaseProducts(orderRequest.products());
-        // 3. guardar la orden (cabecera)
+
+        // 3. Persistencia de la orden (Cabecera)
         var order = orderRepository.save(orderMapper.toOrder(orderRequest));
-        // 4. guardar las lineas de la Orden - detalle
-        for (PurchaseRequest purchaseRequest : orderRequest.products()) {
-            orderLineService.saveOrderLine(
-                    new OrderLineRequest(
-                            null,
-                            order.getId(),
-                            purchaseRequest.productId(),
-                            purchaseRequest.quantity()
-                    )
-            );
-        }
-        // 5. TODO: Iniciar proceso de pago (payment service via Feign/Kafka)
-        // 6. noti via Kafka (asincrona)
-        //si falla no se envia jeje
+
+        // 4. Registro de los detalles de la orden (Líneas de pedido)
+        orderRequest.products().forEach(product ->
+                orderLineService.saveOrderLine(
+                        new OrderLineRequest(
+                                null,
+                                order.getId(),
+                                product.productId(),
+                                product.quantity()
+                        )
+                )
+        );
+
+        // 5. Gestión del pago (Comunicación Sincrónica con Payment Service)
+        // Se delega la responsabilidad de cobro antes de confirmar la transacción final.
+        var paymentRequest = new PaymentRequest(
+                orderRequest.amount(),
+                orderRequest.paymentMethod(),
+                order.getId(),
+                order.getReference(),
+                customer
+        );
+        paymentClient.requestOrderPayment(paymentRequest);
+
+        // 6. Publicación del evento de confirmación en el Broker (Kafka - Asíncrono)
+        // El mensaje se envía solo si el flujo anterior fue exitoso. Si el envío al broker falla,
+        // se revierte la orden y el pago para mantener la consistencia del sistema.
         orderProducer.sendOrderConfirmation(new OrderConfirmation(
                 orderRequest.reference(),
                 orderRequest.amount(),
@@ -61,6 +81,8 @@ public class OrderService {
                 customer,
                 purchaseProducts
         ));
+
+        log.info("Orden creada exitosamente con ID: {}", order.getId());
         return order.getId();
     }
 

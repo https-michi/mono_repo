@@ -1,6 +1,8 @@
 package com.mich.ecommerce.order.service;
 
 import com.mich.ecommerce.customer.CustomerClient;
+import com.mich.ecommerce.kafka.OrderConfirmation;
+import com.mich.ecommerce.kafka.OrderProducer;
 import com.mich.ecommerce.order.dto.OrderRequest;
 import com.mich.ecommerce.order.exception.BusinessException;
 import com.mich.ecommerce.order.mapper.OrderMapper;
@@ -11,6 +13,7 @@ import com.mich.ecommerce.product.dto.PurchaseRequest;
 import com.mich.ecommerce.product.service.ProductClient;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -20,16 +23,19 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final OrderLineService orderLineService;
+    private final OrderProducer orderProducer;
 
+    @Transactional
     public Integer createdOrder(OrderRequest orderRequest) {
-        // 1. Validar Cliente
+        // 1. validar cliente (Feign)
         var customer = customerClient.findCustomerById(orderRequest.customerId())
-                .orElseThrow(() -> new BusinessException("Cannot create order:: No customer exists with the provided ID"));
-        // 2. Comprar productos (Llamada al otro MS) --> product-ms
-        productClient.purchaseProducts(orderRequest.products());
+                .orElseThrow(() -> new BusinessException("Cannot create order:: No customer exists"));
+        // 2. comprar productos (Feign - Sinconico)
+        // aqui restamos el stock. Si no hay stock, esto lanza excepción y el transactional cancela.
+        var purchaseProducts = productClient.purchaseProducts(orderRequest.products());
+        // 3. guardar la orden (cabecera)
         var order = orderRepository.save(orderMapper.toOrder(orderRequest));
-        // 3. Persistir Orden
-        // TODO: Persistir Order Lines
+        // 4. guardar las lineas de la Orden - detalle
         for (PurchaseRequest purchaseRequest : orderRequest.products()) {
             orderLineService.saveOrderLine(
                     new OrderLineRequest(
@@ -40,8 +46,16 @@ public class OrderService {
                     )
             );
         }
-        // TODO: Inicio de proceso de pago
-        // TODO: Kafka Notification - envio de confirmacion de orden
-        return null;
+        // 5. TODO: Iniciar proceso de pago (payment service via Feign/Kafka)
+        // 6. noti via Kafka (asincrona)
+        //si falla no se envia jeje
+        orderProducer.sendOrderConfirmation(new OrderConfirmation(
+                orderRequest.reference(),
+                orderRequest.amount(),
+                orderRequest.paymentMethod(),
+                customer,
+                purchaseProducts
+        ));
+        return order.getId();
     }
 }

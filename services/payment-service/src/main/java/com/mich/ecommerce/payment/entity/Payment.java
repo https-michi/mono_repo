@@ -1,11 +1,11 @@
-package payment.entity;
+package com.mich.ecommerce.payment.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import payment.enums.PaymentMethod;
+import com.mich.ecommerce.payment.enums.PaymentMethod;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

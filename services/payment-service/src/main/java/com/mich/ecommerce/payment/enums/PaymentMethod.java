@@ -1,4 +1,4 @@
-package payment.enums;
+package com.mich.ecommerce.payment.enums;
 
 public enum PaymentMethod {
     PAYPAL,

@@ -2,6 +2,7 @@ package com.mich.ecommerce.orderline.mapper;
 
 import com.mich.ecommerce.order.entity.Order;
 import com.mich.ecommerce.orderline.dto.OrderLineRequest;
+import com.mich.ecommerce.orderline.dto.OrderLineResponse;
 import com.mich.ecommerce.orderline.entity.OrderLine;
 import org.springframework.stereotype.Service;
 
@@ -23,5 +24,13 @@ public class OrderLineMapper {
                 )
                 .quantity(request.quantity())
                 .build();
+    }
+
+    public OrderLineResponse toOrderLineResponse(OrderLine orderLine) {
+        Objects.requireNonNull(orderLine, "OrderLine entity must not be null");
+        return new OrderLineResponse(
+                orderLine.getId(),
+                orderLine.getQuantity()
+        );
     }
 }

@@ -1,5 +1,6 @@
 package com.mich.ecommerce.kafka;
 
+import com.mich.ecommerce.kafka.email.EmailService;
 import com.mich.ecommerce.kafka.order.OrderConfirmation;
 import com.mich.ecommerce.kafka.payment.NotificationRepository;
 import com.mich.ecommerce.kafka.payment.PaymentConfirmation;
@@ -17,11 +18,11 @@ import java.time.LocalDateTime;
 @Slf4j
 public class NotificationConsumer {
     private final NotificationRepository notificationRepository;
+    private final EmailService emailService;
 
-    //    private final EmailService emailService;
     @KafkaListener(topics = "payment-topic")
     public void consumePaymentSuccessNotification(PaymentConfirmation paymentConfirmation) {
-        log.info(String.format("Consuming the message from payment-topic Topic:: %s", paymentConfirmation));
+        log.info("Consuming payment success for Order: {}", paymentConfirmation.orderReference());
         notificationRepository.save(
                 Notification.builder()
                         .type(NotificationType.PAYMENT_CONFIRMATION)
@@ -29,19 +30,36 @@ public class NotificationConsumer {
                         .paymentConfirmation(paymentConfirmation)
                         .build()
         );
-        //TODO: enviar emoil
+        String customerName = String.format("%s %s", paymentConfirmation.customerFirstname(), paymentConfirmation.customerLastname());
+
+        emailService.sendPaymentSuccessEmail(
+                paymentConfirmation.customerEmail(),
+                customerName,
+                paymentConfirmation.amount(),
+                paymentConfirmation.orderReference()
+        );
     }
 
     @KafkaListener(topics = "order-topic")
     public void consumeOrderSuccessNotification(OrderConfirmation orderConfirmation) {
-        log.info(String.format("Consuming the message from order-topic Topic:: %s", orderConfirmation));
+        log.info("Consuming order confirmation for Reference: {}", orderConfirmation.orderReference());
         notificationRepository.save(
                 Notification.builder()
-                        .type(NotificationType.PAYMENT_CONFIRMATION)
+                        .type(NotificationType.ORDER_CONFIRMATION)
                         .notificationDate(LocalDateTime.now())
                         .orderConfirmation(orderConfirmation)
                         .build()
         );
-        //TODO: enviar emoil
+
+        var customer = orderConfirmation.customer();
+        String customerName = String.format("%s %s", customer.firstname(), customer.lastname());
+
+        emailService.sendOrderConfirmationEmail(
+                orderConfirmation.customer().email(),
+                customerName,
+                orderConfirmation.totalAmount(),
+                orderConfirmation.orderReference(),
+                orderConfirmation.products()
+        );
     }
 }

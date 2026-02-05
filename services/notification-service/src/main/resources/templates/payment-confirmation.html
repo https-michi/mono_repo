@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Confirmation</title>
+
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f6f9fc;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .email-wrapper {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            padding: 32px;
+            text-align: center;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            font-size: 22px;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 36px;
+        }
+
+        .greeting {
+            font-size: 16px;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        .summary-box {
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 24px 0;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .summary-row:last-child {
+            margin-bottom: 0;
+            padding-top: 12px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .label {
+            color: #6b7280;
+        }
+
+        .value {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        .amount {
+            color: #6366f1;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .message {
+            font-size: 15px;
+            color: #4b5563;
+            margin-top: 20px;
+        }
+
+        .footer {
+            background-color: #f9fafb;
+            padding: 24px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer p {
+            font-size: 13px;
+            color: #9ca3af;
+            margin: 6px 0;
+        }
+
+        .brand {
+            color: #6366f1;
+            font-weight: 600;
+        }
+
+        @media (max-width: 600px) {
+            .content {
+                padding: 28px 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="email-wrapper">
+
+    <div class="header">
+        <h1>Payment Confirmed</h1>
+    </div>
+
+    <div class="content">
+        <p class="greeting">
+            Hello <span th:text="${customerName}"></span>,
+        </p>
+
+        <p class="message">
+            Your payment has been successfully processed.
+        </p>
+
+        <div class="summary-box">
+            <div class="summary-row">
+                <span class="label">Order Reference</span>
+                <span class="value" th:text="${orderReference}"></span>
+            </div>
+            <div class="summary-row">
+                <span class="label">Amount Paid</span>
+                <span class="value amount">$<span th:text="${amount}"></span></span>
+            </div>
+        </div>
+
+        <p class="message">
+            You can review your order details anytime from your account.
+        </p>
+    </div>
+
+    <div class="footer">
+        <p>This is an automated confirmation. Please do not reply.</p>
+        <p class="brand">michiou</p>
+        <p>&copy; 2024</p>
+    </div>
+
+</div>
+</body>
+</html>
